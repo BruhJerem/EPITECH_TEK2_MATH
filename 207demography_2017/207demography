@@ -1,0 +1,268 @@
+#!/usr/bin/python3
+
+import sys
+import math
+import os.path
+import csv
+
+year_tab = []
+pop_tab = []
+file = []
+country = []
+mean_pop = 0
+mean_year = 0
+
+
+def helper():
+    print("USAGE")
+    print("\t\t./207demography code1 [...]\n")
+    print("DESCRIPTION")
+    print("\t\tcode1 country code")
+
+
+def error_handling():
+    for s in sys.argv:
+        if s != sys.argv[0]:
+            if len(s) != 3:
+                return -1
+        for c in s:
+            if s != sys.argv[0]:
+                if c.isalpha() == 0:
+                    return -1
+
+
+def get_year_tab():
+    global year_tab
+    global file
+    for line in range(0, 1):
+        for data in range(2, len(file[line])):
+            year_tab.append(file[line][data])
+
+
+def get_pop_tab():
+    global file
+    global country
+    global pop_tab
+    res = []
+    avg = 0
+    for code in sys.argv[1:]:
+        for i in range(1, len(file)):
+            if code == file[i][1]:
+                country.append(file[i][0])
+                res.append(file[i][2:])
+    for i in range(0, 51):
+        for data in res:
+           avg += float(data[i])
+        pop_tab.append(avg)
+        avg = 0
+
+
+def open_file():
+    try:
+        open('207demography_data.csv', 'r')
+    except IOError:
+        sys.stderr.write('Error: File 207demography_data.csv does not exist\n')
+        return -1
+    else:
+        global file
+        with open('207demography_data.csv', 'r') as csvfile:
+            r = csv.reader(csvfile, delimiter=';')
+            for row in r:
+                file.append(row)
+
+
+def calc_mean_year():
+    global year_tab
+    global mean_year
+    res = 0
+    for i in year_tab:
+        res += float(i)
+    res /= len(year_tab)
+    mean_year = res
+
+
+def calc_variance_year():
+    global year_tab
+    global mean_year
+    sd = 0
+    for data in year_tab:
+        sd += (float(data) - mean_year) **2
+    sd = math.sqrt(sd / len(year_tab))
+    return sd ** 2
+
+
+def calc_variance_pop():
+    global pop_tab
+    global mean_pop
+    sd = 0
+    for data in pop_tab:
+        sd += ((float(data) / 1000000) - mean_pop) ** 2
+    sd = math.sqrt(sd / len(pop_tab))
+    return sd ** 2
+
+
+def calc_mean_pop():
+    global pop_tab
+    global mean_pop
+    mean = 0
+    for i in pop_tab:
+        mean += float(i) / 1000000
+    mean /= len(pop_tab)
+    mean_pop = mean
+
+
+def calc_covar():
+    global year_tab
+    global pop_tab
+    global mean_year
+    global mean_pop
+    covar = 0
+    for i in range(0, 51):
+        covar += ((float(pop_tab[i]) / 1000000) - mean_pop) * (float(year_tab[i]) - mean_year)
+    covar /= len(pop_tab)
+    return covar
+
+
+def calc_coef_year():
+    global year_tab
+    covar = calc_covar()
+    variance_year = calc_variance_year()
+    return covar / variance_year
+
+
+def calc_coef_pop():
+    global pop_tab
+    covar = calc_covar()
+    variance_pop = calc_variance_pop()
+    return covar / variance_pop
+
+
+def calc_origine_year():
+    global mean_year
+    global mean_pop
+    coef = calc_coef_year()
+    res = mean_pop - mean_year * coef
+    return res
+
+
+def calc_origine_pop():
+    global mean_pop
+    global mean_year
+    coef = calc_coef_pop()
+    res = mean_year - mean_pop * coef
+    return res
+
+
+def calc_standard_year():
+    global year_tab
+    global pop_tab
+    res = 0
+    coef = calc_coef_year()
+    origine = calc_origine_year()
+    for i in range(0, len(pop_tab)):
+        res += ((float(pop_tab[i]) / 1000000) - (float(year_tab[i]) * coef + origine)) ** 2
+    res = math.sqrt(res / len(pop_tab))
+    return res
+
+
+def calc_standard_pop():
+    global year_tab
+    global pop_tab
+    res = 0
+    coef = calc_coef_pop()
+    origine = calc_origine_pop()
+    for i in range(0, len(pop_tab)):
+        res += ((float(pop_tab[i]) / 1000000) - ((float(year_tab[i]) - origine) / coef)) ** 2
+    res = math.sqrt(res / len(pop_tab))
+    return res
+
+
+def calc_pop2050_year():
+    coef = calc_coef_year()
+    origine = calc_origine_year()
+    return coef * 2050 + origine
+
+
+def calc_pop2050_pop():
+    coef = calc_coef_pop()
+    origine = calc_origine_pop()
+    return (2050 - origine) / coef
+
+
+def calc_correlation():
+    coef1 = calc_coef_pop()
+    coef2 = calc_coef_year()
+    return math.sqrt(coef1 * coef2)
+
+
+def core():
+    global file
+    global year_tab
+    global pop_tab
+    global country
+    get_year_tab()
+    get_pop_tab()
+    calc_mean_year()
+    calc_mean_pop()
+    print("country: ", ", ".join(country))
+    print("fit 1")
+    print("\tY = ", end="")
+    print("%.2f" % calc_coef_year(), end=" ")
+    print("X", end="")
+    origine_year = calc_origine_year()
+    if (origine_year < 0):
+        origine_year *= -1
+        print(" - %.2f" % origine_year)
+    else:
+        print(" + %.2f" % origine_year)
+    print("\tstandard deviation: ", end="")
+    print("%.2f" % calc_standard_year())
+    print("\tpopulation in 2050: ", end="")
+    print("%.2f" % calc_pop2050_year())
+    print("fit 2")
+    print("\tX = ", end="")
+    print("%.2f Y " % calc_coef_pop(), end="")
+    origine_pop = calc_origine_pop()
+    if (origine_pop < 0):
+        origine_pop *= -1
+        print("- %.2f" % origine_pop)
+    else:
+        print("+ %.2f" % origine_pop)
+    print("\tstandard deviation: ", end="")
+    print("%.2f" % calc_standard_pop())
+    print("\tpopulation in 2050: ", end="")
+    print("%.2f" % calc_pop2050_pop())
+    print("correlation: %.4f" % calc_correlation())
+
+
+def main():
+    try:
+        if sys.argv[1] == "-h" and len(sys.argv) == 2:
+            helper()
+            return 0
+        elif open_file() == -1:
+            exit(84)
+        elif len(sys.argv) >= 2:
+            if error_handling() == -1:
+                print("Error: Arguments are invalid")
+                exit(84)
+            core()
+        else:
+            print("Error: To much arguments.")
+            exit(84)
+    except IndexError:
+        print("Error: List index out of range.")
+        exit(84)
+    except IOError as e:
+        print ("I/O error({}): {}".format(e.errno, e.strerror))
+        exit(84)
+    except ValueError:
+        print ("Could not convert data to an integer.")
+        exit(84)
+    except OverflowError:
+        print("Math range error.")
+        exit(84)
+
+
+if __name__ == '__main__':
+    main()

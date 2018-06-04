@@ -1,0 +1,95 @@
+#!/usr/bin/python3
+
+
+import sys
+import math
+
+#variance = (((poll / 100) * (1 - (poll / 100))) / sample) * ((population - sample) / (population - 1))
+
+def calc_variance():
+    pop = int(sys.argv[1])
+    samp = int(sys.argv[2])
+    poll = float(sys.argv[3]) / 100
+    return ((poll * (1 - poll)) / samp) * ((pop - samp) / (pop - 1))
+
+
+def min(value):
+    if value < 0:
+        res = 0
+    else:
+        res = value
+    return res
+
+
+def max(value):
+    if value > 100:
+        res = 100
+    else:
+        res = value
+    return res
+
+
+def core():
+    var = calc_variance()
+    val1 = (2 * 1.96 * math.sqrt(var)) / 2 * 100
+    val2 = (2 * 2.58 * math.sqrt(var)) / 2 * 100
+    print("population size: \t\t", sys.argv[1])
+    print("sample size:\t\t\t", sys.argv[2])
+    print("voting intentions: \t\t", sys.argv[3], end="")
+    print("%")
+    print("variance:\t\t\t %.6f" % var)
+    print("95% confidence interval:\t [", end="")
+    print("%.2f" % min(float(sys.argv[3]) - val1), end="")
+    print("% ; ", end="")
+    print("%.2f" % max(float(sys.argv[3]) + val1), end="")
+    print("%]")
+    print("99% confidence interval:\t [", end="")
+    print("%.2f" %  min(float(sys.argv[3]) - val2), end="")
+    print("% ; ", end="")
+    print("%.2f" % max(float(sys.argv[3]) + val2), end="")
+    print("%]")
+
+
+def error_handling():
+    for arg in sys.argv[1:3]:
+        if not arg.isdigit():
+            return -1
+    if not isinstance(float(sys.argv[3]), float):
+        return -1
+
+
+def helper():
+    print("USAGE")
+    print("\t\t./209poll pSize sSize p\n")
+    print("DESCRIPTION")
+    print("\t\tppSize\tsize of the population")
+    print("\t\tsSize\tsize of the sample (supposed to be representative)")
+    print("\t\tp\tpercentage of voting intentions for a specific candidate")
+
+
+if __name__ == '__main__':
+    try:
+
+        if len(sys.argv) == 2 and sys.argv[1] == "-h":
+            helper()
+            exit(84)
+        elif len(sys.argv) == 4:
+            if error_handling() == -1:
+                print("Error: Arguments are invalid")
+                exit(84)
+            core()
+        else:
+            print("Error: Wrong argument number")
+            exit(84)
+    except IndexError:
+        print("Error: List index out of range.")
+        exit(84)
+    except IOError as e:
+        print ("I/O error({}): {}".format(e.errno, e.strerror))
+        exit(84)
+    except ValueError:
+        print ("Could not convert data to an integer.")
+        exit(84)
+    except OverflowError:
+        print("Math range error.")
+        exit(84)

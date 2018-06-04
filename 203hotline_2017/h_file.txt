@@ -1,0 +1,7 @@
+USAGE
+        ./203hotline [n k | d]
+
+DESCRIPTION
+        n       n value for the computation of (n/k)
+        k       k value for the computation of (n/k)
+        d       average duration of calls (in seconds)

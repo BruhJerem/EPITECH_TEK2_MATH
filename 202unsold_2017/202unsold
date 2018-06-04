@@ -1,0 +1,189 @@
+#!/bin/python3
+import sys
+from math import *
+
+
+def aff_h_func():
+    _h = open("h_file.txt", "r")
+    _array = _h.read().split('\n')
+    for _line in _array:
+        print (_line)
+
+
+def check_input():
+    if not sys.argv[1].isdigit():
+        print("First Argument must be digital")
+        exit(84)
+    if not sys.argv[2].isdigit():
+        print("Second Argument must be digital")
+        exit(84)
+    if int(sys.argv[1]) <= 50:
+        print("First Argument must be more than 50")
+        exit(84)
+    if int(sys.argv[2]) <= 50:
+        print("Second Argument must be more than 50")
+        exit(84)
+
+
+def calc_prob(y):
+    dic = {}
+    law = 0
+    for x in range(1, 6):
+        first = ((int(sys.argv[1]) - (x * 10)) * (int(sys.argv[2]) - y)) / (
+                    (5 * int(sys.argv[1]) - 150) * (5 * int(sys.argv[2]) - 150))
+        print("%.3f" % (first), end='\t')
+        dic[x*10] = first
+        law = law + first
+    print("%.3f" % law, end='')
+    print('')
+    return dic
+
+
+def check_if_egale_1(dic):
+    xlawres = 0
+    ylawres = 0
+    for y in range(1, 6):
+        xlaw = 0
+        for i in range(1, 6):
+            xlaw = xlaw + dic[i*10][y*10]
+            xlawres = xlawres + dic[i*10][y*10]
+        print("%.3f" % xlaw, end='\t')
+    for i in range(1, 6):
+        xlaw = 0
+        for y in range(1, 6):
+            ylawres = ylawres + dic[i * 10][y * 10]
+    if xlawres == 1:
+        print("%.f" % xlawres)
+    elif ylawres == 1:
+        print("%.f" % ylawres)
+    else:
+        print('0.000')
+
+
+def first_part():
+    dic = {}
+    print('\t', end='')
+    for i in range(1, 6):
+        print('X=', end='')
+        print(i*10, end='\t')
+    print('Y law')
+    for i in range(1, 6):
+        print('Y=', end='')
+        print(i*10, end='\t')
+        dic[i*10] = calc_prob(i*10)
+    print('X law', end='\t')
+    check_if_egale_1(dic)
+    return dic
+
+
+def second_part(dic):
+    zzlaw = {}
+    print('z', end='\t')
+    for i in range(2, 11):
+        print(i*10, end='\t')
+    print('total')
+    print('p(Z=z)', end='\t')
+    total = 0
+    print('%.3f' % dic[10][10], end='\t')
+    for i in range(3, 11):
+        res = 0
+        for y in range(1, 6):
+            for x in range(1, 6):
+                if ((y*10 + x*10) == i*10 and i < 60):
+                    res+=(dic[y*10][x*10] + dic[x*10][y*10])
+                    total+=res
+        print("%.3f" % (res / 2), end='\t')
+        zzlaw[i*10] = res / 2
+    print("%.f" % (int(total) / 4))
+
+
+def xlaw_calc(dic, i):
+    res = 0
+    xlaw = 0
+    for a in range(1, 6):
+        xlaw = xlaw + dic[a * 10][i]
+    print(xlaw)
+    return xlaw
+
+def zzlaw_calc(dic):
+    zzlaw = {}
+    zzlaw[20] = dic[10][10]
+    for i in range(3, 11):
+        res = 0
+        for y in range(1, 6):
+            for x in range(1, 6):
+                if ((y*10 + x*10) == i*10 and i < 60):
+                    res+=(dic[y*10][x*10] + dic[x*10][y*10])
+        zzlaw[i*10] = res / 2
+    return zzlaw
+
+
+def third_part(dic):
+    valx = 0
+    valy = 0
+    res = 0
+    xxlaw = {}
+    yylaw = {}
+    for i in range(1, 6):
+        lol = 0
+        for a in range(1, 6):
+            res=dic[a*10][i*10]
+            lol+=res
+            valx+=res*i
+        xxlaw[i*10] = lol
+    print('expected value of X: ', end='')
+    print("%.1f" % (valx*10))
+    print('variance of X: ', end='\t')
+    varx = 0
+    for i in range(1, 6):
+        varx+=(i * 10 - valx*10 )**2 * xxlaw[i*10]
+    print("%.1f" % varx)
+    res = 0
+    lol = 0
+    for i in range(1, 6):
+        lol=0
+        for a in range(1, 6):
+            res=dic[i * 10][a * 10]
+            lol+=res
+            valy+=res * i
+        yylaw[i*10]=lol
+    print('expected value of Y: ', end='')
+    print("%.1f" % (valy * 10))
+    print('variance of Y: ', end='\t')
+    vary = 0
+    for i in range(1, 6):
+        vary += (i * 10 - valy * 10) ** 2 * yylaw[i * 10]
+    print("%.1f" % vary)
+    print('expected value of Z: ', end='')
+    print("%.1f" % ((valx + valy) * 10))
+    print('variance of Z: ', end='\t')
+    varz=0
+    zzlaw=zzlaw_calc(dic)
+    for i in range(2, 11):
+        varz += (i * 10 - (valx+valy) * 10)**2 * zzlaw[i*10]
+    print("%.1f" % varz)
+
+
+def main():
+    if sys.argv[1] == "-h" and len(sys.argv) == 2:
+        aff_h_func()
+        return 0
+    if len(sys.argv) < 3:
+        print("There is not enough arguments")
+        exit(84)
+    if len(sys.argv) != 3:
+        print("Not enough arguments")
+        exit(84)
+    else:
+        check_input()
+        print('------------------------------------------------------------')
+        dic = first_part()
+        print('------------------------------------------------------------')
+        second_part(dic)
+        print('------------------------------------------------------------')
+        third_part(dic)
+        print('------------------------------------------------------------')
+
+
+if __name__ == '__main__':
+    main()

@@ -1,0 +1,156 @@
+#!/bin/python3
+import sys
+from math import *
+import statistics
+
+
+def aff_h_func():
+    _h = open("h_file.txt", "r")
+    _array = _h.read().split('\n')
+    for _line in _array:
+        print (_line)
+
+
+def is_int(value):
+    try:
+        int(value)
+        return True
+    except ValueError:
+        return False
+
+
+def is_float(value):
+    try:
+        float(value)
+        return True
+    except ValueError:
+        return False
+
+
+def pars_param():
+    if not is_float(sys.argv[1]) and not is_int(sys.argv[1]):
+        print("Error: {} must be digital.".format(sys.argv[1]))
+        exit(84)
+    if float(sys.argv[1]) > 2.5:
+        print("Error: {} must be lower than 2.5.".format(sys.argv[1]))
+        exit(84)
+    if float(sys.argv[1]) < 0:
+        print("Error: {} must be positive.".format(sys.argv[1]))
+        exit(84)
+
+
+def calc_formule(a, t):
+    return (a * exp(-t)) + (4 - 3 * a) * exp(-2 * t) + (2 * a - 4) * exp(-4 * t)
+
+
+def calc_with_intervale(a, value):
+    return value * (calc_formule(a, value))
+
+
+def calc_time(t):
+    print("%dm %.fs" % divmod(t * 60, 60))
+
+
+def calc_average():
+    a = float(sys.argv[1])
+    global tab
+    tab = []
+    steps = 0.01
+    esperance = 0
+    intervale = 0
+    while intervale <= 1000:
+        esperance += (((calc_with_intervale(a, intervale)) + 4 * calc_with_intervale(a, intervale + (
+                steps / 2)) + calc_with_intervale(a, intervale + steps)) / 6) * steps
+        tab.append(esperance)
+        intervale += steps
+    return esperance
+
+
+def calc_deviation():
+    a = float(sys.argv[1])
+    steps = 0.01
+    sd = 0
+    intervale = 0
+    value = calc_average()
+    while intervale <= 10:
+        sd += ((value - intervale)**2) * (((calc_formule(a, intervale) + (4 * calc_formule(a, intervale + (
+                    steps / 2))) + calc_formule(a, intervale + steps)) / 6) * steps)
+        intervale += steps
+    return sqrt(sd)
+
+
+def ducks_50_back():
+    res = 0
+    i = 0
+    while i <= 1000:
+        res += calc_formule(float(sys.argv[1]), i / 100)
+        if res >= 50:
+            i /= 100
+            return print("%dm %02ds" % divmod(i * 60, 60))
+        i = i + 1
+
+
+def ducks_99_back():
+    res = 0
+    i = 0
+    while i <= 1000:
+        res += calc_formule(float(sys.argv[1]), i / 100)
+        if res >= 99:
+            i /= 100
+            return print("%dm %02ds" % divmod(i * 60, 60))
+        i = i + 1
+
+
+def primitive(a, t):
+    return (-a * exp(-t) - (
+            4 - 3 * a) / 2 * exp(-2 * t) - (
+                    2 * a - 4) / 4 * exp(
+        -4 * t))
+
+
+def calc_percentage(nb):
+    return primitive(float(sys.argv[1]), nb) - primitive(float(sys.argv[1]), 0)
+
+
+def ducks():
+    pars_param()
+    print("average return time: ", end="")
+    calc_time(calc_average())
+    print("standard deviation: ", end="")
+    print("%.3f" % calc_deviation())
+    print("time after which 50% of the ducks come back: ", end="")
+    ducks_50_back()
+    print("time after which 99% of the ducks come back: ", end="")
+    ducks_99_back()
+    print("percentage of ducks back after 1 minute: ", end="")
+    print("%.1f%%" % (calc_percentage(1) * 100))
+    print("percentage of ducks back after 2 minutes: ", end="")
+    print("%.1f%%" % (calc_percentage(2) * 100))
+
+
+def main():
+    try:
+        if sys.argv[1] == "-h" and len(sys.argv) == 2:
+            aff_h_func()
+            return 0
+        elif len(sys.argv) == 2:
+            ducks()
+        else:
+            print("Error: To much arguments.")
+            exit(84)
+    except IndexError:
+        print("Error: List index out of range.")
+        exit(84)
+    except IOError as e:
+        print ("I/O error({}): {}".format(e.errno, e.strerror))
+        exit(84)
+    except ValueError:
+        print ("Could not convert data to an integer.")
+        exit(84)
+    except OverflowError:
+        print("Math range error.")
+        exit(84)
+
+
+if __name__ == '__main__':
+    main()

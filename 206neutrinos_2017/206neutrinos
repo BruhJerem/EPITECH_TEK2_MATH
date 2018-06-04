@@ -1,0 +1,165 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+
+import sys
+from math import *
+
+arithmetic_mean = 0
+harmonic_mean = 0
+quadratic_mean = 0
+standard_deviation = 0
+counter = 0
+
+
+def set_global():
+    global arithmetic_mean
+    global harmonic_mean
+    global standard_deviation
+    global counter
+
+    counter = int(sys.argv[1])
+    arithmetic_mean = float(sys.argv[2])
+    harmonic_mean = float(sys.argv[3])
+    standard_deviation = int(sys.argv[4])
+
+
+def usage():
+    _h = open("h_file.txt", "r")
+    _array = _h.read().split('\n')
+    for _line in _array:
+        print (_line)
+
+
+def is_int(value):
+    try:
+        int(value)
+        return True
+    except ValueError:
+        return False
+
+
+def is_float(value):
+    try:
+        float(value)
+        return True
+    except ValueError:
+        return False
+
+
+def calc_arithmetic(enter, counter, variance):
+    return (variance + enter) / counter
+
+
+def calc_harmonique(enter, counter, harmonic_mean):
+    return counter / ((1 / enter) + ((counter - 1) / harmonic_mean))
+
+
+def calc_ecart_type(enter, counter, sum_carr, arithmetic_mean):
+    return sqrt(((sum_carr + pow(enter, 2)) / counter) - pow(arithmetic_mean, 2))
+
+
+def calc_quadratique(enter, counter, sum_carr):
+    return sqrt((sum_carr + pow(enter, 2)) / counter)
+
+
+def print_output(enter):
+    global arithmetic_mean
+    global harmonic_mean
+    global quadratic_mean
+    global standard_deviation
+    global counter
+
+    variance = arithmetic_mean * counter
+    sum_carr = (pow(standard_deviation, 2) + pow(arithmetic_mean, 2)) * counter
+
+    counter += 1
+
+    # arithmetic_mean = (variance + enter) / counter
+    # standard_deviation = sqrt(((sum_carr + pow(enter, 2)) / counter) - pow(arithmetic_mean, 2))
+    # quadratic_mean = sqrt((sum_carr + pow(enter, 2)) / counter)
+    # harmonic_mean = counter / ((1 / enter) + ((counter - 1) / harmonic_mean))
+
+    arithmetic_mean = calc_arithmetic(enter, counter, variance)
+    standard_deviation = calc_ecart_type(enter, counter, sum_carr, arithmetic_mean)
+    quadratic_mean = calc_quadratique(enter, counter, sum_carr)
+    harmonic_mean = calc_harmonique(enter, counter, harmonic_mean)
+
+    print("\tcounter mãlinder :\t{}".format(counter))
+    print("\tstandardafvilgelse :\t%.2f" % standard_deviation)
+    print("\taritmetisk gennemsnit :\t%.2f" % arithmetic_mean)
+    print("\tkvadratisk gennemsnit :\t%.2f" % quadratic_mean)
+    print("\tharmonisk gennemsnit :\t%.2f\n" % harmonic_mean)
+    enter_boucle()
+
+
+def enter_boucle():
+    enter = input("indtast din vaerdi :\t")
+    if enter == "ENDE":
+        exit(0)
+    if is_int(enter) is False or int(enter) <= 0:
+        print("Error: Input given must be a strictly positive number")
+        exit(84)
+    print_output(int(enter))
+
+
+def check_inputs():
+    is_zero = False
+    if is_int(sys.argv[1]) is False and is_float(sys.argv[1]) is False:
+        print("Error: {} is not a number.".format(sys.argv[1]))
+        exit(84)
+    if int(sys.argv[1]) is 0:
+        is_zero = True
+    for i in range(2, 5):
+        if is_int(sys.argv[i]) is False and is_float(sys.argv[i]) is False:
+            print("Error: {} is not a number.".format(sys.argv[i]))
+            exit(84)
+        if is_zero is True and int(sys.argv[i]) > 0:
+            print("Error: All values must be 0 when number of values is Zero.")
+            exit(84)
+    # Check number of values
+    if int(sys.argv[1]) < 0:
+        print("Error: Number of values must be positive.")
+        exit(84)
+    # check standard deviation
+    if int(sys.argv[4]) < 0:
+        print("Error: Number of deviation must be positive.")
+        exit(84)
+
+
+def main():
+    try:
+        if len(sys.argv) < 5:
+            print("Error: Not enough argument.")
+            usage()
+            exit(84)
+        if sys.argv[1] == "-h" and len(sys.argv) == 2:
+            usage()
+            return 0
+        if len(sys.argv) is 5:
+            check_inputs()
+            set_global()
+            enter_boucle()
+            return 0
+        else:
+            print("Error: To much arguments.")
+            usage()
+            exit(84)
+    except IndexError:
+        print("Error: List index out of range.")
+        exit(84)
+    except ValueError:
+        print ("Could not convert data to an integer.")
+        exit(84)
+    except OverflowError:
+        print("Math range error.")
+        exit(84)
+    except ZeroDivisionError:
+        print("Error: Division by Zero.")
+        exit(84)
+    except KeyboardInterrupt:
+        print("\nKeyboard Interuption.")
+        exit(0)
+
+
+if __name__ == '__main__':
+    main()

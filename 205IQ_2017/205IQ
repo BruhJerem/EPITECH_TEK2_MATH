@@ -1,0 +1,126 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+
+import sys
+from math import *
+
+
+def usage():
+    _h = open("h_file.txt", "r")
+    _array = _h.read().split('\n')
+    for _line in _array:
+        print (_line)
+
+
+def is_int(value):
+    try:
+        int(value)
+        return True
+    except ValueError:
+        return False
+
+
+def formule(u, o, i):
+    return (1 / (float(o) * sqrt(2 * pi))) * exp(-(float(i) - float(u)) ** 2 / (2 * float(o) ** 2))
+
+
+def check_inputs():
+    if not 0 <= int(sys.argv[1]) <= 200:
+        print("Error: Value {} must be between 0 and 200.".format(sys.argv[1]))
+        exit(84)
+    if int(sys.argv[2]) <= 0:
+        print("Error: Value {} must be positive.".format(sys.argv[2]))
+        exit(84)
+    for i in range(1, len(sys.argv)):
+        if not is_int(sys.argv[i]):
+            print("Error: Value {} must be integer.".format(sys.argv[i]))
+            exit(84)
+        if int(sys.argv[i]) < 0:
+            print("Error: Value {} must be positive.".format(sys.argv[i]))
+            exit(84)
+    if len(sys.argv) == 5:
+        if int(sys.argv[3]) > int(sys.argv[4]):
+            print("Error: Third Value must be lower than fourth.")
+            exit(84)
+
+
+def print_tab(list):
+    for i in range(0, len(list)):
+        print(i, end=" ")
+        print("%.2f"%list[i])
+
+
+def calc_percent(list, arg1, arg2):
+    res = 0
+    for i in range(arg1, arg2):
+        res += list[i]
+    return res
+
+
+def print_else(list):
+    #first_iq = calc_percent(list, 0, int(sys.argv[3]))
+    if len(sys.argv) == 4:
+        print("%.1f%%"%calc_percent(list, 0, int(sys.argv[3])), end=" ")
+        print("of people have an IQ inferior to {}".format(sys.argv[3]))
+    else:
+        #second_iq = calc_percent(list, 0, int(sys.argv[4]))
+        #res = second_iq - first_iq
+        #print("%.1f%%" % res, end=" ")
+        print("%.1f%%" % calc_percent(list, int(sys.argv[3]), int(sys.argv[4])), end=" ")
+        print("of people have an IQ between {} and {}".format(sys.argv[3],sys.argv[4]))
+
+
+def get_iq_to_simpson():
+    u = int(sys.argv[1])
+    o = int(sys.argv[2])
+    nb_list = []
+
+    for i in range(0, 200):
+        res = (formule(u, o, i) + (4 * formule(u, o, i + 0.5)) + formule(u, o, i + 1))/6
+        nb_list.append(res*100)
+    return nb_list
+
+
+def get_iq():
+    u = int(sys.argv[1])
+    o = int(sys.argv[2])
+    nb_list = []
+
+    for i in range(0, 200):
+        res = formule(u, o, i)
+        nb_list.append(res*100)
+    return nb_list
+
+
+def main():
+    try:
+        if len(sys.argv) < 3:
+            print("Error: Not enough argument")
+            usage()
+            exit(84)
+        if sys.argv[1] == "-h" and len(sys.argv) == 2:
+            usage()
+            return 0
+        elif 3 <= len(sys.argv) <= 5:
+            check_inputs()
+            if len(sys.argv) == 3:
+                print_tab(get_iq())
+            else:
+                print_else(get_iq_to_simpson())
+        else:
+            print("Error: To much arguments.")
+            usage()
+            exit(84)
+    except IndexError:
+        print("Error: List index out of range.")
+        exit(84)
+    except ValueError:
+        print ("Could not convert data to an integer.")
+        exit(84)
+    except OverflowError:
+        print("Math range error.")
+        exit(84)
+
+
+if __name__ == '__main__':
+    main()

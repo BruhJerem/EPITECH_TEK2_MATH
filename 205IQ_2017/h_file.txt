@@ -1,0 +1,8 @@
+USAGE
+            ./205IQ μ σ [IQ1] [IQ2]
+
+DESCRIPTION
+            μ predetermined mean
+            σ predetermined standard deviation
+            IQ1 minimum IQ
+            IQ2 maximum IQ

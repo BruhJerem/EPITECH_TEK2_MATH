@@ -1,0 +1,141 @@
+#!/bin/python3
+import sys
+from math import *
+import time
+
+def aff_h_func():
+    _h = open("h_file.txt", "r")
+    _array = _h.read().split('\n')
+    for _line in _array:
+        print (_line)
+
+
+def is_int(value):
+    try:
+        int(value)
+        return True
+    except ValueError:
+        return False
+
+
+def combination_calc():
+    if not is_int(sys.argv[1]) or not is_int(sys.argv[2]):
+        print("Error: Values must be int.")
+        exit(84)
+    if int(sys.argv[1]) < 0 or int(sys.argv[2]) < 0:
+        print("Error: Values must be superior than 0.")
+        exit(84)
+    print("{}-combination of a {} set:".format(sys.argv[2], sys.argv[1]))
+    res = factorial(int(sys.argv[1]))
+    res = res // (factorial(int(sys.argv[2])) * (factorial(int(sys.argv[1]) - int(sys.argv[2]))))
+    print(int(res))
+
+
+
+def sample():
+    x = int(sys.argv[1])
+    res = (((x / 3600) * 3500) /  8) / 3500
+    return float(res)
+
+# de index jusqu'a 3500
+def fact_spe(idx):
+    inc = 3500
+    res = 1
+    while inc > 3500 - idx:
+        res *= inc
+        inc -= 1
+    return res / factorial(idx)
+
+
+def bino_calculator(idx):
+    smp = sample()
+    res = float(pow(smp, idx) * pow((1 - smp), 3500 - idx))
+    res *= fact_spe(idx)
+    return res
+
+
+def computation_binomial_calc(start):
+    return (time.time() - start) * 1000
+
+
+def binomial_distri():
+    print("Binomial distribution:")
+    start_time = time.time()
+    res = 0.0
+    for idx in range(0, 51):
+        e = bino_calculator(idx)
+        if idx == 50 or (idx+1) % 6 == 0 and idx != 0:
+            print("{} -> %.3f".format(idx) % e)
+        else:
+            print("{} -> %.3f".format(idx) % e, end="\t")
+        if idx <= 25:
+            res += e
+    print("overload:  %.1f%%"%((1-res)*100))
+    print("computation time:  %.2f ms"%computation_binomial_calc(start_time), end="\n\n")
+
+
+def poisson_calculator(idx):
+    smp = sample() * 3500
+    res = (pow(smp, idx) * exp(-smp)) / factorial(idx)
+    return res
+
+
+def computation_poisson_calc(s):
+    return (time.time() - s) * 1000
+
+
+def poisson():
+    print("Poisson distribution:")
+    res = 0.0
+    start_time = time.time()
+    for idx in range(0, 51):
+        e = poisson_calculator(idx)
+        if idx == 50 or (idx+1) % 6 == 0 and idx != 0:
+            print("{} -> %.3f".format(idx) % e)
+        else:
+            print("{} -> %.3f".format(idx) % e, end="\t")
+        if idx <= 25:
+            res += e
+    print("overload:  %.1f%%" % ((1 - res)*100))
+    print("computation time:  %.2f ms" % computation_poisson_calc(start_time))
+
+
+def hotline():
+    if not is_int(sys.argv[1]):
+        print("Error: Value must be int.")
+        exit(84)
+    if int(sys.argv[1]) < 0:
+        print("Error: Value must be superior than 0.")
+        exit(84)
+    binomial_distri()
+    poisson()
+
+
+def main():
+    try:
+        if sys.argv[1] == "-h" and len(sys.argv) == 2:
+            aff_h_func()
+            return 0
+        elif len(sys.argv) == 3:
+            combination_calc()
+        elif len(sys.argv) == 2:
+            hotline()
+        else:
+            print("Error: To much arguments.")
+            exit(84)
+    except IndexError:
+        print("Error: List index out of range.")
+        exit(84)
+    except IOError as e:
+        print ("I/O error({}): {}".format(e.errno, e.strerror))
+        exit(84)
+    except ValueError:
+        print ("Could not convert data to an integer.")
+        exit(84)
+    except OverflowError:
+        print("Math range error.")
+        exit(84)
+
+
+if __name__ == '__main__':
+    main()
